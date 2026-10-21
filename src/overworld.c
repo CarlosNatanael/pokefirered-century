@@ -36,8 +36,10 @@
 #include "quest_log_objects.h"
 #include "random.h"
 #include "renewable_hidden_items.h"
+#include "reset_save_heap.h"
 #include "roamer.h"
 #include "safari_zone.h"
+#include "save.h"
 #include "save_location.h"
 #include "scanline_effect.h"
 #include "script.h"
@@ -1548,6 +1550,15 @@ void CB2_WhiteOut(void)
 
     if (++gMain.state >= 120)
     {
+        // Hardcore mode: losing sends the player back to the last save instead
+        // of the Pokemon Center. Same "is there a real save?" check the save
+        // menu uses; with no save yet, fall back to the normal white-out.
+        if (!(gSaveFileStatus == SAVE_STATUS_EMPTY || gSaveFileStatus == SAVE_STATUS_INVALID) || !gDifferentSaveFile)
+        {
+            ReloadSave();
+            return;
+        }
+
         FieldClearVBlankHBlankCallbacks();
         StopMapMusic();
         ResetSafariZoneFlag_();
